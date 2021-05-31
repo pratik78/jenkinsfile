@@ -1,0 +1,73 @@
+pipeline{
+    agent {label 'master'}
+	options { timestamps() }
+	environment {
+		
+		MAILING_LIST="pratik.l.gaikwadgaikwad@accenture.com"
+
+	}
+    stages{
+		stage('Checkout_Terraform_Scripts') {
+				steps {
+					git branch: 'master',
+					credentialsId: 'my_git_creds',
+					url: 'https://github.com/pratik78/terraform_scripts.git'
+
+					sh "ls -lat"
+				}
+			}
+		stage('Terraform_Plan'){
+			steps {
+				sh '''
+					ls
+					pwd
+					echo "Terraform_Plan steps will be added here."
+				'''
+	
+	            }
+			
+			}			
+		stage('Verificatiom'){
+			steps {
+				sh '''
+				echo "Verificatiom steps will be added here."
+				'''
+	
+	            }
+			
+			}
+			
+		stage('Terraform_deploy'){
+			steps {
+				sh '''
+					pwd
+					echo "Add Terraform_deploy steps here."
+
+				'''
+	
+	            }
+			
+			}			
+			
+
+			
+		}
+
+
+	post {
+		always{
+			node('master'){
+				deleteDir()
+			}
+
+		}
+		
+			success {
+					build job: 'Ci_Deployment', parameters: [string(name: 'ArtifactVersion', value: "$ArtifactVersion")]
+        	}		
+        	failure {
+            		emailext attachLog: true, body: 'Job ${JOB_NAME} [${BUILD_NUMBER}] FAILED.', recipientProviders: [[$class: 'DevelopersRecipientProvider']], subject: 'FAILED: Job ${JOB_NAME} [${BUILD_NUMBER}]', to: "${MAILING_LIST}"
+        	}
+    	}
+
+}	
